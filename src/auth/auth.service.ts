@@ -11,12 +11,15 @@ import { AuthErrorCode } from './auth.enum';
 import { AuthCredentialsDto } from './dtos/auth-credentials.dto';
 import { User } from './user.entity';
 import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
+import { JwtPayload } from './dtos/jwt-payload.interface';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    private jwtService: JwtService,
   ) {}
 
   private async registUser(
@@ -46,7 +49,9 @@ export class AuthService {
     await this.registUser(authCredentialsDto);
   }
 
-  async signIn(authCredentialsDto: AuthCredentialsDto): Promise<string> {
+  async signIn(
+    authCredentialsDto: AuthCredentialsDto,
+  ): Promise<{ accessToken: string }> {
     const { username, password } = authCredentialsDto;
 
     const user = await this.userRepository.findOneBy({
@@ -63,7 +68,8 @@ export class AuthService {
     if (!isCorrectPassword) {
       throw new UnauthorizedException('Please check your password');
     }
-
-    return 'success';
+    const payload: JwtPayload = { username };
+    const accessToken = await this.jwtService.sign(payload);
+    return { accessToken };
   }
 }
