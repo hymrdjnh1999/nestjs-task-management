@@ -103,18 +103,43 @@ export class TasksService {
     const result: TaskEntity[] = [];
 
     const result1 = await this.taskRepository.findBy({ user: { id: user.id } });
-    if (search) {
+    if (search && !status) {
+      result.push(
+        ...(await this.taskRepository.findBy({
+          title: Like(`%${search.toLowerCase()}%`),
+          user: {
+            id: user.id,
+          },
+        })),
+      );
+      result.push(
+        ...(await this.taskRepository.findBy({
+          description: Like(`%${search.toLowerCase()}%`),
+          user: {
+            id: user.id,
+          },
+        })),
+      );
+    }
+    if (status && !search) {
+      result.push(
+        ...(await this.taskRepository.findBy({
+          status: status,
+          user: {
+            id: user.id,
+          },
+        })),
+      );
+    }
+    if (search && status) {
       result.push(
         ...(await this.taskRepository.findBy({
           title: Like(`%${search.toLowerCase()}%`),
           description: Like(`%${search.toLowerCase()}%`),
-        })),
-      );
-    }
-    if (status) {
-      result.push(
-        ...(await this.taskRepository.findBy({
           status,
+          user: {
+            id: user.id,
+          },
         })),
       );
     }

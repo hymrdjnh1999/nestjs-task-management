@@ -24,7 +24,7 @@ import { TaskEntity } from './task.entity';
 export class TasksController {
   private logger = new Logger('TaskController');
   constructor(private taskService: TasksService) {}
-  @Get()
+  @Post()
   async getTasks(
     @Body() filterDto: GetTaskFilterDto,
     @GetUser() user: User,
