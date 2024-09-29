@@ -35,7 +35,7 @@ export class TasksController {
     return await this.taskService.getTaskWithFilter(filterDto, user);
   }
 
-  @Post()
+  @Post("create")
   async createTask(
     @Body() createTaskDto: CreateTaskDto,
     @GetUser() user: User,

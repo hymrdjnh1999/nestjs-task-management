@@ -11,20 +11,31 @@ import { configValidationSchema } from './config.schema';
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: [`.env.stage.${process.env.STAGE}`],
-      validationSchema: configValidationSchema
+      validationSchema: configValidationSchema,
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get<string>('DATABASE_HOST'),
-        port: configService.get<number>('DATABASE_PORT'),
-        username: configService.get<string>('DATABASE_USER'),
-        password: configService.get<string>('DATABASE_PASSWORD'),
-        database: configService.get<string>('DATABASE_NAME'),
-        synchronize: true,
-        autoLoadEntities: true,
-      }),
+      useFactory: (configService: ConfigService) => {
+        const isProduction = configService.get('STAGE') === 'prod';
+        return {
+          type: 'postgres',
+          host: configService.get<string>('DATABASE_HOST'),
+          port: configService.get<number>('DATABASE_PORT'),
+          username: configService.get<string>('DATABASE_USER'),
+          password: configService.get<string>('DATABASE_PASSWORD'),
+          database: configService.get<string>('DATABASE_NAME'),
+          synchronize: true,
+          autoLoadEntities: true,
+          ssl: isProduction,
+          extra: {
+            ssl: isProduction
+              ? {
+                  rejectUnauthorized: false,
+                }
+              : null,
+          },
+        };
+      },
       inject: [ConfigService],
     }),
     AuthModule,
